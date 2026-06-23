@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ParticleCanvas from './components/ParticleCanvas'
+import MusicPlayer from './components/MusicPlayer'
 import PasswordScreen from './components/PasswordScreen'
 import CountdownScreen from './components/CountdownScreen'
 import CardScreen from './components/CardScreen'
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <>
       <ParticleCanvas birthday={showCard} />
+      <MusicPlayer />
       {!authed && <PasswordScreen onSuccess={handleAuth} />}
       {authed && !unlocked && <CountdownScreen />}
       {showCard && <CardScreen />}
