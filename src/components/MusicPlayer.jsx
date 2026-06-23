@@ -4,84 +4,39 @@ const MUSIC_URL = 'https://raw.githubusercontent.com/zyx-0715/something/5b26b80a
 
 export default function MusicPlayer() {
   const audioRef = useRef(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [error, setError] = useState(false)
+  const [started, setStarted] = useState(false)
 
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || started) return
 
-    // 自動播放（有聲音時）
-    const attemptPlay = async () => {
+    // 監聽任何使用者互動（點擊、觸碰等）
+    const startMusic = async () => {
       try {
+        audio.volume = 0.5  // 設定音量 50%
         await audio.play()
-        setIsPlaying(true)
+        setStarted(true)
       } catch (err) {
-        // 自動播放被瀏覽器阻擋，需要使用者互動才能播
-        console.log('自動播放被阻擋，需要使用者點擊')
+        console.log('播放失敗:', err)
       }
     }
 
-    // 等待 audio 載入後播放
-    audio.addEventListener('canplay', attemptPlay)
-    return () => audio.removeEventListener('canplay', attemptPlay)
-  }, [])
+    // 監聽使用者點擊
+    window.addEventListener('click', startMusic, { once: true })
+    window.addEventListener('touchstart', startMusic, { once: true })
 
-  const handleToggle = async () => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    try {
-      if (isPlaying) {
-        audio.pause()
-        setIsPlaying(false)
-      } else {
-        await audio.play()
-        setIsPlaying(true)
-      }
-      setError(false)
-    } catch (err) {
-      setError(true)
-      console.error('播放失敗:', err)
+    return () => {
+      window.removeEventListener('click', startMusic)
+      window.removeEventListener('touchstart', startMusic)
     }
-  }
-
-  const handleError = () => {
-    setError(true)
-    setIsPlaying(false)
-  }
+  }, [started])
 
   return (
-    <>
-      <audio
-        ref={audioRef}
-        src={MUSIC_URL}
-        crossOrigin="anonymous"
-        onError={handleError}
-        loop
-      />
-      <button
-        className="music-btn"
-        onClick={handleToggle}
-        title={isPlaying ? '暫停' : '播放'}
-        aria-label="音樂播放控制"
-      >
-        {isPlaying ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="4" width="4" height="16" />
-            <rect x="14" y="4" width="4" height="16" />
-          </svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        )}
-      </button>
-      {error && (
-        <div className="music-error" title="音樂載入失敗">
-          🔕
-        </div>
-      )}
-    </>
+    <audio
+      ref={audioRef}
+      src={MUSIC_URL}
+      crossOrigin="anonymous"
+      loop
+    />
   )
 }
